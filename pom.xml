@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.github.nicobao</groupId>
+	<artifactId>jdt.ls.extension.builder</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>jdt.ls.extension.builder :: parent</name>
+	<description>jdt.ls.extension.builder parent</description>
+
+	<prerequisites>
+		<maven>3.0</maven>
+	</prerequisites>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<tycho.version>2.1.0</tycho.version>
+		<tycho.extras.version>2.1.0</tycho.extras.version>
+		<tycho.scmUrl>scm:git:https://github.com/CHANGE/ME.git</tycho.scmUrl>
+		<tycho.generateSourceReferences>true</tycho.generateSourceReferences>
+		<tycho.test.platformArgs />
+		<tycho.test.jvmArgs>-Xmx512m ${tycho.test.platformArgs}</tycho.test.jvmArgs>
+
+
+		<!-- Code coverage -->
+		<jacoco.version>0.8.6</jacoco.version>
+		<coverage.filter>org.eclipse.jdt.ls.*</coverage.filter>
+		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+		<jacoco.destFile>${project.build.directory}/jacoco.exec</jacoco.destFile>
+		<sonar.jacoco.reportPath>${jacoco.destFile}</sonar.jacoco.reportPath>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>oxygen</id>
+			<layout>p2</layout>
+			<url>http://download.eclipse.org/releases/oxygen</url>
+		</repository>
+		<repository>
+			<id>jdt.ls</id>
+			<layout>p2</layout>
+			<url>http://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
+		</repository>
+	</repositories>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-repository-plugin</artifactId>
+				<version>${tycho.version}</version>
+				<configuration>
+					<includeAllDependencies>true</includeAllDependencies>
+				</configuration>
+			</plugin>
+			<!-- <plugin> -->
+			<!-- 	<groupId>org.eclipse.tycho</groupId> -->
+			<!-- 	<artifactId>tycho-maven-plugin</artifactId> -->
+			<!-- 	<version>${tycho.version}</version> -->
+			<!-- 	<extensions>true</extensions> -->
+			<!-- </plugin> -->
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-compiler-plugin</artifactId>
+				<version>2.1.0</version>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho.version}</version>
+				<configuration>
+					<executionEnvironment>JavaSE-11</executionEnvironment>
+					<resolver>p2</resolver>
+					<pomDependencies>consider</pomDependencies>
+					<ignoreTychoRepositories>true</ignoreTychoRepositories>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-packaging-plugin</artifactId>
+				<version>${tycho.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-surefire-plugin</artifactId>
+				<version>2.1.0</version>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.eclipse.tycho</groupId>
+					<artifactId>tycho-maven-plugin</artifactId>
+					<version>${tycho.version}</version>
+					<extensions>true</extensions>
+				</plugin>
+				<plugin>
+					<groupId>org.eclipse.tycho</groupId>
+					<artifactId>tycho-compiler-plugin</artifactId>
+					<version>2.1.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.eclipse.tycho</groupId>
+					<artifactId>target-platform-configuration</artifactId>
+					<version>2.1.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.eclipse.tycho</groupId>
+					<artifactId>tycho-packaging-plugin</artifactId>
+					<version>${tycho.version}</version>
+					<configuration>
+						<format>yyyyMMdd-HHmm</format>
+						<sourceReferences>
+							<generate>${tycho.generateSourceReferences}</generate>
+						</sourceReferences>
+					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>org.eclipse.tycho.extras</groupId>
+							<artifactId>tycho-sourceref-jgit</artifactId>
+							<version>${tycho.extras.version}</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+				<plugin>
+					<groupId>org.eclipse.tycho</groupId>
+					<artifactId>tycho-surefire-plugin</artifactId>
+					<version>${tycho.version}</version>
+					<configuration>
+						<useUIHarness>true</useUIHarness>
+						<argLine>${tycho.test.jvmArgs}</argLine>
+						<!-- kill test JVM if tests take more than 1 minute (60 seconds) to finish -->
+						<forkedProcessTimeoutInSeconds>60</forkedProcessTimeoutInSeconds>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	<profiles>
+		<profile>
+			<id>macosx</id>
+			<activation>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<properties>
+				<tycho.test.platformArgs>-XstartOnFirstThread</tycho.test.platformArgs>
+			</properties>
+		</profile>
+		<profile>
+			<id>plugin</id>
+			<activation>
+				<!-- Enable jacoco only on plugin projects -->
+				<file>
+					<exists>META-INF/MANIFEST.MF</exists>
+				</file>
+			</activation>
+			<properties>
+				<jacoco.destFile>${project.basedir}/../target/jacoco.exec</jacoco.destFile>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-source-plugin</artifactId>
+						<version>${tycho.version}</version>
+						<executions>
+							<execution>
+								<id>attach-source</id>
+								<goals>
+									<goal>plugin-source</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.jacoco</groupId>
+						<artifactId>jacoco-maven-plugin</artifactId>
+						<version>${jacoco.version}</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>prepare-agent</goal>
+								</goals>
+								<configuration>
+									<includes>
+										<include>${coverage.filter}</include>
+									</includes>
+									<!-- Merge reports from all executions -->
+									<append>true</append>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+	<modules>
+		<module>jdt.ls.extension.builder.core</module>
+		<module>jdt.ls.extension.builder.test</module>
+		<module>jdt.ls.extension.builder.site</module>
+	</modules>
+</project>
